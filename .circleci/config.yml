@@ -1,62 +1,3 @@
-#version: 2.1
-#
-#executors:
-#  java-executor:
-#    docker:
-#      - image: cimg/openjdk:17.0
-#  zap-executor:
-#    docker:
-#      - image: ghcr.io/zaproxy/zaproxy:stable
-#
-#jobs:
-#  zap-baseline-scan:
-#    executor: zap-executor
-#    steps:
-#      - checkout
-#      - run:
-#          name: Start OWASP ZAP Baseline Scan
-#          command: |
-#            zap-baseline.py -t http://localhost:8080 -r zap_report.html || true
-#      - store_artifacts:
-#          path: zap_report.html
-#
-#  test-java:
-#    executor: java-executor
-#    steps:
-#      - checkout
-#      - run:
-#          name: Calculate cache key
-#          command: |-
-#            find . -name 'pom.xml' -o -name 'gradlew*' -o -name '*.gradle*' | \
-#                    sort | xargs cat > /tmp/CIRCLECI_CACHE_KEY
-#      - restore_cache:
-#          key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
-#      - run:
-#          name: Run Security Scan with OWASP ZAP
-#          command: |
-#            docker run -u root --rm -v $(pwd):/zap/wrk/:rw \
-#            owasp/zap2docker-stable zap-baseline.py -t http://localhost:8080 -r zap_security_report.html || true
-#      - store_artifacts:
-#          path: zap_security_report.html
-#      - run:
-#          name: Run Gradle Tests
-#          command: ./gradlew check
-#      - store_test_results:
-#          path: build/test-results
-#      - save_cache:
-#          key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
-#          paths:
-#            - ~/.gradle/caches
-#      - store_artifacts:
-#          path: build/reports
-#
-#workflows:
-#  build-and-test:
-#    jobs:
-#      - zap-baseline-scan
-#      - test-java:
-#          requires:
-#            - zap-baseline-scan
 version: 2.1
 
 executors:
@@ -74,9 +15,9 @@ jobs:
       - run:
           name: Creating Dummy Artifacts
           command: |
-            echo "my artifact file" > /tmp/art-1;
-            mkdir /tmp/artifacts;
-            echo "my artifact files in a dir" > /tmp/artifacts/art-2;
+            echo "my artifact file" > /tmp/art-1
+            mkdir /tmp/artifacts
+            echo "my artifact files in a dir" > /tmp/artifacts/art-2
       - store_artifacts:
           path: /tmp/art-1
           destination: artifact-file
@@ -131,8 +72,10 @@ workflows:
   version: 2
   build-and-test:
     jobs:
-      - zap-baseline-scan
+      - build
+      - zap-baseline-scan:
+          requires:
+            - build
       - test-java:
           requires:
             - zap-baseline-scan
-
