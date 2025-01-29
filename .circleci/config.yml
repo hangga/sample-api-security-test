@@ -33,17 +33,33 @@ jobs:
           path: build/reports
           destination: test_reports
 
+#  zap-baseline-scan:
+#    executor: zap-executor
+#    steps:
+#      - checkout
+#      - run:
+#          name: Start OWASP ZAP Baseline Scan
+#          command: |
+#            zap-baseline.py -t http://localhost:8080 -r zap_report.html || true
+#      - store_artifacts:
+#          path: zap_report.html
+#          destination: zap_reports
   zap-baseline-scan:
     executor: zap-executor
     steps:
       - checkout
       - run:
+          name: Wait for application to be available
+          command: |
+            curl --retry 10 --retry-delay 5 http://localhost:8080
+      - run:
           name: Start OWASP ZAP Baseline Scan
           command: |
-            zap-baseline.py -t http://localhost:8080 -r zap_report.html || true
+            zap-baseline.py -t http://localhost:8080 -r /tmp/zap_report.html || true
       - store_artifacts:
-          path: zap_report.html
+          path: /tmp/zap_report.html
           destination: zap_reports
+
 
   delvelin-scan:
     executor: java-executor
