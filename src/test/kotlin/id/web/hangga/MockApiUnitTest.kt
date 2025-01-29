@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.concurrent.thread
 
 class MockApiUnitTest {
     private lateinit var server: WireMockServer
@@ -127,5 +128,20 @@ class MockApiUnitTest {
         }
 
         assertEquals(404, response.status.value)
+    }
+
+    @Test
+    fun `example thread-unsafe using HashMap`() {
+        val map = HashMap<Int, Int>()
+
+        val threads = List(10) { index ->
+            thread {
+                for (i in 0 until 1000) {
+                    map[i] = index
+                }
+            }
+        }
+
+        threads.forEach { it.join() }
     }
 }
