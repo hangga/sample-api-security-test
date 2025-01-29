@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.0"
+    id("io.github.hangga.delvelin") version "0.2.0-beta"
 }
 
 group = "io.github.hangga"
@@ -26,4 +27,8 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(11)
+}
+
+delvelin {
+    outputFileFormat = "HTML" // Options: LOG, JSON, HTML
 }
