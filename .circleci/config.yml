@@ -6,7 +6,7 @@ executors:
       - image: cimg/openjdk:17.0
   zap-executor:
     docker:
-      - image: owasp/zap2docker-stable
+      - image: ghcr.io/zaproxy/zaproxy:stable
 
 jobs:
   zap-baseline-scan:
