@@ -1,10 +1,27 @@
-# This config was automatically generated from your source code
-# Stacks detected: deps:java:.,tool:gradle:
 version: 2.1
-jobs:
-  test-java:
+
+executors:
+  java-executor:
     docker:
       - image: cimg/openjdk:17.0
+  zap-executor:
+    docker:
+      - image: owasp/zap2docker-stable
+
+jobs:
+  zap-baseline-scan:
+    executor: zap-executor
+    steps:
+      - checkout
+      - run:
+          name: Start OWASP ZAP Baseline Scan
+          command: |
+            zap-baseline.py -t http://localhost:8080 -r zap_report.html || true
+      - store_artifacts:
+          path: zap_report.html
+
+  test-java:
+    executor: java-executor
     steps:
       - checkout
       - run:
@@ -15,6 +32,14 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
       - run:
+          name: Run Security Scan with OWASP ZAP
+          command: |
+            docker run -u root --rm -v $(pwd):/zap/wrk/:rw \
+            owasp/zap2docker-stable zap-baseline.py -t http://localhost:8080 -r zap_security_report.html || true
+      - store_artifacts:
+          path: zap_security_report.html
+      - run:
+          name: Run Gradle Tests
           command: ./gradlew check
       - store_test_results:
           path: build/test-results
@@ -24,19 +49,11 @@ jobs:
             - ~/.gradle/caches
       - store_artifacts:
           path: build/reports
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
-    steps:
-      # Replace this with steps to deploy to users
-      - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+
 workflows:
   build-and-test:
     jobs:
-      - test-java
-    # - deploy:
-    #     requires:
-    #       - test-java
+      - zap-baseline-scan
+      - test-java:
+          requires:
+            - zap-baseline-scan
