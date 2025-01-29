@@ -49,17 +49,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run Application
-          command: |
-            ./gradlew bootRun & # Menjalankan aplikasi di background
-            sleep 10 # Menunggu aplikasi siap
-      - run:
-          name: Wait for Application to be Available
-          command: |
-            wget https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
-            chmod +x wait-for-it.sh
-            ./wait-for-it.sh localhost:8080 --timeout=30 --strict -- echo "Application is up"
-      - run:
           name: Start OWASP ZAP Baseline Scan
           command: |
             zap-baseline.py -t http://localhost:8080 -r /tmp/zap_report.html || true
