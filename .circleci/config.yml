@@ -95,7 +95,7 @@ executors:
     docker:
       - image: ghcr.io/zaproxy/zaproxy:stable
         environment:
-          - ZAP_DOCKER_OPTIONS: "-v $(pwd):/zap/wrk"
+          - ZAP_DOCKER_OPTIONS: "-v /tmp:/zap/wrk"
 
 jobs:
   build:
@@ -131,7 +131,7 @@ jobs:
           command: |
             zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html || true
       - store_artifacts:
-          path: zap_report.html
+          path: /tmp/zap_report.html
           destination: zap_reports
 
   delvelin-scan:
