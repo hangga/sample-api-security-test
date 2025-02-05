@@ -123,6 +123,8 @@ jobs:
   zap-baseline-scan:
     executor: zap-executor
     steps:
+      - setup_remote_docker:
+          version: 20.10.7
       - checkout
       - run:
           name: Start OWASP ZAP Baseline Scan
@@ -139,12 +141,12 @@ jobs:
       - run:
           name: Run Delvelin Vulnerability Analysis
           command: |
-            # run delvelin command
+            # Run Delvelin command
             ./gradlew delvelinScan
       - run:
           name: Move Delvelin Report to Artifacts
           command: |
-            # move html report to /tmp
+            # Move HTML report to /tmp
             mv vulnerability-report.html /tmp/vulnerability-report.html
       - store_artifacts:
           path: /tmp/vulnerability-report.html
