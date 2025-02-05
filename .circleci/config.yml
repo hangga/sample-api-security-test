@@ -114,8 +114,8 @@ jobs:
   zap-baseline-scan:
     executor: zap-executor
     steps:
-      - setup_remote_docker:
-          version: 20.10.14  # Gunakan versi terbaru yang stabil
+      - setup_remote_docker
+#          version: 20.10.14  # Gunakan versi terbaru yang stabil
       - checkout
       - run:
           name: Start OWASP ZAP Baseline Scan
