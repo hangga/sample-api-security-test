@@ -111,16 +111,37 @@ jobs:
           path: build/reports/tests/test
           destination: test_reports
 
+#  zap-baseline-scan:
+#    executor: zap-executor
+#    steps:
+#      - setup_remote_docker
+#      - checkout
+#      - run:
+#          name: Start OWASP ZAP Baseline Scan
+#          command: |
+#            docker run --rm -v $(pwd):/zap/wrk ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html || true
+#      - store_artifacts:
+#          path: zap_report.html
+#          destination: zap_reports
   zap-baseline-scan:
     executor: zap-executor
     steps:
-      - setup_remote_docker
-#          version: 20.10.14  # Gunakan versi terbaru yang stabil
+      - setup_remote_docker  # Gunakan versi default dari CircleCI
       - checkout
+#      - run:
+#          name: Start Test Application
+#          command: |
+#            # Jalankan aplikasi untuk diuji (pastikan ini sesuai dengan proyekmu)
+#            ./gradlew bootRun &  # Sesuaikan jika bukan Spring Boot
+#            sleep 15  # Tunggu agar aplikasi siap
       - run:
           name: Start OWASP ZAP Baseline Scan
           command: |
-            docker run --rm -v $(pwd):/zap/wrk ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html || true
+            docker run --rm --user root \
+              -v $(pwd):/zap/wrk \
+              -w /zap/wrk \
+              ghcr.io/zaproxy/zaproxy:stable \
+              zap-baseline.py -t http://host.docker.internal:8080 -r /zap/wrk/zap_report.html || true
       - store_artifacts:
           path: zap_report.html
           destination: zap_reports
