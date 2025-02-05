@@ -94,8 +94,6 @@ executors:
   zap-executor:
     docker:
       - image: ghcr.io/zaproxy/zaproxy:stable
-        environment:
-          - ZAP_DOCKER_OPTIONS: "-v /tmp:/zap/wrk"
 
 jobs:
   build:
@@ -129,9 +127,9 @@ jobs:
       - run:
           name: Start OWASP ZAP Baseline Scan
           command: |
-            zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html || true
+            docker run --rm -v $(pwd):/zap/wrk ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html || true
       - store_artifacts:
-          path: /tmp/zap_report.html
+          path: zap_report.html
           destination: zap_reports
 
   delvelin-scan:
