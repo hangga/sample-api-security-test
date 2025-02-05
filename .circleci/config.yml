@@ -141,11 +141,16 @@ jobs:
           name: Start OWASP ZAP Baseline Scan
           command: |
             source $BASH_ENV
-            docker run --rm --user root \
+#            docker run --rm --user root \
+#              -v $(pwd):/zap/wrk \
+#              -w /zap/wrk \
+#              ghcr.io/zaproxy/zaproxy:stable \
+#              zap-baseline.py -t http://$HOST_IP:8080 -r /zap/wrk/zap_report.html || true
+
+            docker run --rm --network=host \
               -v $(pwd):/zap/wrk \
-              -w /zap/wrk \
               ghcr.io/zaproxy/zaproxy:stable \
-              zap-baseline.py -t http://$HOST_IP:8080 -r /zap/wrk/zap_report.html || true
+              zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html || true
       - store_artifacts:
           path: zap_report.html
           destination: zap_reports
