@@ -128,6 +128,21 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
+        # ✅ Start WireMock sebagai service di background
+      - run:
+          name: Start WireMock Server
+          command: |
+            docker run -d --name wiremock -p 8080:8080 wiremock/wiremock
+
+        # ✅ Tunggu WireMock agar siap menerima request
+      - run:
+          name: Check WireMock is Running
+          command: |
+            until $(curl --output /dev/null --silent --head --fail http://localhost:8080/__admin); do
+              echo "Waiting for WireMock..."
+              sleep 3
+            done
+            echo "WireMock is up!"
       - run:
           name: Get Host IP
           command: |
