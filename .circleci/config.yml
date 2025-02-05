@@ -126,37 +126,30 @@ jobs:
   zap-baseline-scan:
     executor: zap-executor
     steps:
-      - setup_remote_docker  # Gunakan versi default dari CircleCI
+      - setup_remote_docker
       - checkout
+      - run:
+          name: Get Host IP
+          command: |
+            echo "export HOST_IP=$(hostname -I | awk '{print $1}')" >> $BASH_ENV
 #      - run:
-#          name: Start Test Application
+#          name: Start Application
 #          command: |
-#            # Jalankan aplikasi untuk diuji (pastikan ini sesuai dengan proyekmu)
-#            ./gradlew bootRun &  # Sesuaikan jika bukan Spring Boot
-#            sleep 15  # Tunggu agar aplikasi siap
+#            java -jar build/libs/your-app.jar &
+#            sleep 15
       - run:
           name: Start OWASP ZAP Baseline Scan
           command: |
-            HOST_IP=$(cat /tmp/host_ip.env | cut -d '=' -f2)
-              docker run --rm --user root \
+            source $BASH_ENV
+            docker run --rm --user root \
               -v $(pwd):/zap/wrk \
               -w /zap/wrk \
               ghcr.io/zaproxy/zaproxy:stable \
               zap-baseline.py -t http://$HOST_IP:8080 -r /zap/wrk/zap_report.html || true
-#            source $BASH_ENV  # Load HOST_IP
-#              docker run --rm --user root \
-#              -v $(pwd):/zap/wrk \
-#              -w /zap/wrk \
-#              ghcr.io/zaproxy/zaproxy:stable \
-#              zap-baseline.py -t http://$HOST_IP:8080 -r /zap/wrk/zap_report.html || true
-#            docker run --rm --user root \
-#              -v $(pwd):/zap/wrk \
-#              -w /zap/wrk \
-#              ghcr.io/zaproxy/zaproxy:stable \
-#              zap-baseline.py -t http://host.docker.internal:8080 -r /zap/wrk/zap_report.html || true
       - store_artifacts:
           path: zap_report.html
           destination: zap_reports
+
 
   delvelin-scan:
     executor: java-executor
