@@ -30,30 +30,20 @@
 #          paths:
 #            - ~/.gradle/caches
 #      - store_artifacts:
-#          path: build/reports
+#          path: build/reports/tests/test
 #          destination: test_reports
 #
-##  zap-baseline-scan:
-##    executor: zap-executor
-##    steps:
-##      - checkout
-##      - run:
-##          name: Start OWASP ZAP Baseline Scan
-##          command: |
-##            zap-baseline.py -t http://localhost:8080 -r zap_report.html || true
-##      - store_artifacts:
-##          path: zap_report.html
-##          destination: zap_reports
 #  zap-baseline-scan:
 #    executor: zap-executor
 #    steps:
+#      - setup_remote_docker
 #      - checkout
 #      - run:
 #          name: Start OWASP ZAP Baseline Scan
 #          command: |
-#            zap-baseline.py -t http://localhost:8080 -r /tmp/zap_report.html || true
+#            docker run --rm -v $(pwd):/zap/wrk ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html || true
 #      - store_artifacts:
-#          path: /tmp/zap_report.html
+#          path: zap_report.html
 #          destination: zap_reports
 #
 #  delvelin-scan:
@@ -63,12 +53,12 @@
 #      - run:
 #          name: Run Delvelin Vulnerability Analysis
 #          command: |
-#            # run delvelin command
+#            # Run Delvelin command
 #            ./gradlew delvelinScan
 #      - run:
 #          name: Move Delvelin Report to Artifacts
 #          command: |
-#            # move html report to /tmp
+#            # Move HTML report to /tmp
 #            mv vulnerability-report.html /tmp/vulnerability-report.html
 #      - store_artifacts:
 #          path: /tmp/vulnerability-report.html
@@ -93,7 +83,8 @@ executors:
       - image: cimg/openjdk:17.0
   zap-executor:
     docker:
-      - image: ghcr.io/zaproxy/zaproxy:stable
+      - image: cimg/python:3.9  # Gunakan Python karena ZAP membutuhkan interpreter
+    working_directory: ~/project
 
 jobs:
   build:
@@ -123,7 +114,8 @@ jobs:
   zap-baseline-scan:
     executor: zap-executor
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.14  # Gunakan versi terbaru yang stabil
       - checkout
       - run:
           name: Start OWASP ZAP Baseline Scan
