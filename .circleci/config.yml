@@ -137,12 +137,18 @@ jobs:
       - run:
           name: Start OWASP ZAP Baseline Scan
           command: |
-            source $BASH_ENV  # Load HOST_IP
+            HOST_IP=$(cat /tmp/host_ip.env | cut -d '=' -f2)
               docker run --rm --user root \
               -v $(pwd):/zap/wrk \
               -w /zap/wrk \
               ghcr.io/zaproxy/zaproxy:stable \
               zap-baseline.py -t http://$HOST_IP:8080 -r /zap/wrk/zap_report.html || true
+#            source $BASH_ENV  # Load HOST_IP
+#              docker run --rm --user root \
+#              -v $(pwd):/zap/wrk \
+#              -w /zap/wrk \
+#              ghcr.io/zaproxy/zaproxy:stable \
+#              zap-baseline.py -t http://$HOST_IP:8080 -r /zap/wrk/zap_report.html || true
 #            docker run --rm --user root \
 #              -v $(pwd):/zap/wrk \
 #              -w /zap/wrk \
